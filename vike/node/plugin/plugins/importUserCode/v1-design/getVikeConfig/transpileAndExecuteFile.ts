@@ -108,7 +108,7 @@ async function transpileWithEsbuild(
     outfile: path.posix.join(
       // Needed for correct inline source map
       entryFileDir,
-      // `write: false` => no file is actually be emitted
+      // `write: false` => no file is actually emitted
       'NEVER_EMITTED.js'
     ),
     logLevel: 'silent',
@@ -140,8 +140,6 @@ async function transpileWithEsbuild(
             if (args.kind !== 'import-statement') return
             if (args.pluginData?.[useEsbuildResolver]) return
 
-            const isImportAbsolute = !args.path.startsWith('.')
-
             const { path, ...opts } = args
             opts.pluginData = { [useEsbuildResolver]: true }
             const resolved = await build.resolve(path, opts)
@@ -161,17 +159,21 @@ async function transpileWithEsbuild(
               //  - For example if esbuild cannot resolve a path alias while Vite can.
               //    - When tsconfig.js#compilerOptions.paths is set, then esbuild is able to resolve the path alias.
               resolved.errors.length > 0
-            pointerImports_[args.path] = isPointerImport
+            pointerImports_[resolved.path] = isPointerImport
 
+            assertPosixPath(resolved.path)
             const isExternal =
               isPointerImport ||
-              // npm package imports that aren't pointer imports (e.g. Vite plugin import)
-              isImportAbsolute
+              // npm package imports that aren't pointer imports (e.g. importing a Vite plugin)
+              resolved.path.includes('/node_modules/')
+            /* We cannot do that because isNpmPackageImport() cannot distinguish path aliases that look like npm package imports. (Path aliases import user-land code which can be TypeScript and thus cannot be externalized.)
+            const isExternal = isPointerImport || isNpmPackageImport(args.path)
+            */
 
             if (debug.isEnabled) debug('onResolved()', { args, resolved, isPointerImport, isExternal })
 
             if (isExternal) {
-              return { external: true, path: args.path }
+              return { external: true, path: resolved.path }
             } else {
               return resolved
             }
