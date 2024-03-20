@@ -1,3 +1,6 @@
+- fix optimizeDeps
+- improve debug flags
+
 - userAgent for vike-{vue,solid}
 - improve vike.dev/head
 - Remove `pageContext.data.title` from boilerplates
