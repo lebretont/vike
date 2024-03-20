@@ -169,10 +169,10 @@ async function transpileWithEsbuild(
             if (debug.isEnabled) debug('onResolved()', { args, resolved, isPointerImport, isExternal })
 
             if (isExternal) {
-              return { external: true, path: toPosixPath(resolved.path) }
-            } else {
-              return resolved
+              resolved.external = true
             }
+
+            return resolved
           })
         }
       },
