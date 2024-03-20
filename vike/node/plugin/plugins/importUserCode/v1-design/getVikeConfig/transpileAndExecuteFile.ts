@@ -161,14 +161,10 @@ async function transpileWithEsbuild(
               resolved.errors.length > 0
             pointerImports_[resolved.path] = isPointerImport
 
-            assertPosixPath(resolved.path)
             const isExternal =
               isPointerImport ||
               // npm package imports that aren't pointer imports (e.g. importing a Vite plugin)
-              resolved.path.includes('/node_modules/')
-            /* We cannot do that because isNpmPackageImport() cannot distinguish path aliases that look like npm package imports. (Path aliases import user-land code which can be TypeScript and thus cannot be externalized.)
-            const isExternal = isPointerImport || isNpmPackageImport(args.path)
-            */
+              toPosixPath(resolved.path).includes('/node_modules/')
 
             if (debug.isEnabled) debug('onResolved()', { args, resolved, isPointerImport, isExternal })
 
