@@ -1,3 +1,3 @@
 export { env }
 
-const env = { server: true } as const
+const env = { server: true, client: true } as const
