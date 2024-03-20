@@ -143,6 +143,7 @@ async function transpileWithEsbuild(
             const { path, ...opts } = args
             opts.pluginData = { [useEsbuildResolver]: true }
             const resolved = await build.resolve(path, opts)
+            resolved.path = toPosixPath(resolved.path)
 
             // vike-{react,vue,solid} follow the convention that their config export resolves to a file named +config.js
             //  - This is temporary, see comment below.
@@ -165,12 +166,11 @@ async function transpileWithEsbuild(
               isPointerImport ||
               // npm package imports that aren't pointer imports (e.g. importing a Vite plugin)
               toPosixPath(resolved.path).includes('/node_modules/')
-
-            if (debug.isEnabled) debug('onResolved()', { args, resolved, isPointerImport, isExternal })
-
             if (isExternal) {
               resolved.external = true
             }
+
+            if (debug.isEnabled) debug('onResolved()', { args, resolved, isPointerImport, isExternal })
 
             return resolved
           })
